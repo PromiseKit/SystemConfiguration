@@ -34,7 +34,6 @@ private func callback(reachability: SCNetworkReachability, flags: SCNetworkReach
     }
 }
 
-
 private class Helper {
     let pending = Promise<Void>.pending()
     let ref: SCNetworkReachability
@@ -42,16 +41,20 @@ private class Helper {
     init(ref: SCNetworkReachability) throws {
         self.ref = ref
 
-        _ = pending.promise.ensure {
-            SCNetworkReachabilitySetCallback(self.ref, nil, nil)
-            SCNetworkReachabilitySetDispatchQueue(self.ref, nil)
-        }
-
         var context = SCNetworkReachabilityContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
         context.info = UnsafeMutableRawPointer(Unmanaged<Helper>.passUnretained(self).toOpaque())
 
-        guard SCNetworkReachabilitySetCallback(ref, callback, &context), SCNetworkReachabilitySetDispatchQueue(ref, .main) else {
+        guard SCNetworkReachabilitySetCallback(ref, callback, &context) else {
             throw SCNetworkReachability.PMKError.couldNotInitializeReachability
+        }
+        guard SCNetworkReachabilitySetDispatchQueue(ref, .main) else {
+            SCNetworkReachabilitySetCallback(ref, nil, nil)
+            throw SCNetworkReachability.PMKError.couldNotInitializeReachability
+        }
+
+        _ = pending.promise.ensure {
+            SCNetworkReachabilitySetCallback(self.ref, nil, nil)
+            SCNetworkReachabilitySetDispatchQueue(self.ref, nil)
         }
     }
 }
