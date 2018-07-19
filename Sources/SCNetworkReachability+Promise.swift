@@ -1,5 +1,8 @@
 import SystemConfiguration
+#if !PMKCocoaPods
+import PMKCancel
 import PromiseKit
+#endif
 
 public extension SCNetworkReachability {
 
@@ -9,22 +12,30 @@ public extension SCNetworkReachability {
 
     static func promise() -> Promise<Void> {
         do {
-            var zeroAddress = sockaddr()
-            zeroAddress.sa_len = UInt8(MemoryLayout<sockaddr>.size)
-            zeroAddress.sa_family = sa_family_t(AF_INET)
-            guard let ref = SCNetworkReachabilityCreateWithAddress(nil, &zeroAddress) else {
-                throw PMKError.couldNotInitializeReachability
-            }
-
-            var flags = SCNetworkReachabilityFlags()
-            if SCNetworkReachabilityGetFlags(ref, &flags), flags.contains(.reachable) {
+            if let promise = try pending()?.promise {
+                return promise
+            } else {
                 return Promise()
             }
-
-            return try Helper(ref: ref).pending.promise
         } catch {
             return Promise(error: error)
         }
+    }
+    
+    fileprivate static func pending() throws -> (promise: Promise<Void>, resolver: Resolver<Void>)? {
+        var zeroAddress = sockaddr()
+        zeroAddress.sa_len = UInt8(MemoryLayout<sockaddr>.size)
+        zeroAddress.sa_family = sa_family_t(AF_INET)
+        guard let ref = SCNetworkReachabilityCreateWithAddress(nil, &zeroAddress) else {
+            throw PMKError.couldNotInitializeReachability
+        }
+
+        var flags = SCNetworkReachabilityFlags()
+        if SCNetworkReachabilityGetFlags(ref, &flags), flags.contains(.reachable) {
+            return nil
+        }
+
+        return try Helper(ref: ref).pending
     }
 }
 
@@ -58,3 +69,20 @@ private class Helper {
         }
     }
 }
+
+//////////////////////////////////////////////////////////// Cancellation
+
+public extension SCNetworkReachability {
+    static func promiseCC() -> CancellablePromise<Void> {
+        do {
+            if let pending = try pending() {
+                return CancellablePromise(promise: pending.promise, resolver: pending.resolver)
+            } else {
+                return CancellablePromise()
+            }
+        } catch {
+            return CancellablePromise(error: error)
+        }
+    }
+}
+

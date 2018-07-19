@@ -1,3 +1,4 @@
+import PMKCancel
 import PMKSystemConfiguration
 import XCTest
 
