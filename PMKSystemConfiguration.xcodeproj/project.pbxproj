@@ -12,6 +12,7 @@
 		6362F84F1D5D934C0021D2DD /* SCNetworkReachability+AnyPromise.m in Sources */ = {isa = PBXBuildFile; fileRef = 6362F84D1D5D934C0021D2DD /* SCNetworkReachability+AnyPromise.m */; };
 		6383E14B1D611E0D00897651 /* SCTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6383E14A1D611E0D00897651 /* SCTests.swift */; };
 		63C7FFF71D5C020D003BAE60 /* PMKSystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63C7FFA71D5BEE09003BAE60 /* PMKSystemConfiguration.framework */; };
+		911E6FC820F578E2006F49B9 /* SCNetworkReachability+Promise.swift in Sources */ = {isa = PBXBuildFile; fileRef = 911E6FC720F578E2006F49B9 /* SCNetworkReachability+Promise.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -34,6 +35,7 @@
 		63C7FFF21D5C020D003BAE60 /* PMKSCTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PMKSCTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		63CCF8121D5C0C4E00503216 /* Cartfile */ = {isa = PBXFileReference; lastKnownFileType = text; path = Cartfile; sourceTree = "<group>"; };
 		63CCF8171D5C11B500503216 /* Carthage.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Carthage.xcconfig; sourceTree = "<group>"; };
+		911E6FC720F578E2006F49B9 /* SCNetworkReachability+Promise.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = "SCNetworkReachability+Promise.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -82,6 +84,7 @@
 				6358AB791D5D4B6700B9B157 /* PMKSystemConfiguration.h */,
 				6362F84C1D5D934C0021D2DD /* SCNetworkReachability+AnyPromise.h */,
 				6362F84D1D5D934C0021D2DD /* SCNetworkReachability+AnyPromise.m */,
+				911E6FC720F578E2006F49B9 /* SCNetworkReachability+Promise.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -192,6 +195,7 @@
 			);
 			inputPaths = (
 				PromiseKit,
+				PMKCancel,
 			);
 			name = "Embed Carthage Frameworks";
 			outputPaths = (
@@ -208,6 +212,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				6362F84F1D5D934C0021D2DD /* SCNetworkReachability+AnyPromise.m in Sources */,
+				911E6FC820F578E2006F49B9 /* SCNetworkReachability+Promise.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
