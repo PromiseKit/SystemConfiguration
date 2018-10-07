@@ -9,22 +9,30 @@ public extension SCNetworkReachability {
 
     static func promise() -> Promise<Void> {
         do {
-            var zeroAddress = sockaddr()
-            zeroAddress.sa_len = UInt8(MemoryLayout<sockaddr>.size)
-            zeroAddress.sa_family = sa_family_t(AF_INET)
-            guard let ref = SCNetworkReachabilityCreateWithAddress(nil, &zeroAddress) else {
-                throw PMKError.couldNotInitializeReachability
-            }
-
-            var flags = SCNetworkReachabilityFlags()
-            if SCNetworkReachabilityGetFlags(ref, &flags), flags.contains(.reachable) {
+            if let promise = try pending()?.promise {
+                return promise
+            } else {
                 return Promise()
             }
-
-            return try Helper(ref: ref).pending.promise
         } catch {
             return Promise(error: error)
         }
+    }
+    
+    fileprivate static func pending() throws -> (promise: Promise<Void>, resolver: Resolver<Void>)? {
+        var zeroAddress = sockaddr()
+        zeroAddress.sa_len = UInt8(MemoryLayout<sockaddr>.size)
+        zeroAddress.sa_family = sa_family_t(AF_INET)
+        guard let ref = SCNetworkReachabilityCreateWithAddress(nil, &zeroAddress) else {
+            throw PMKError.couldNotInitializeReachability
+        }
+
+        var flags = SCNetworkReachabilityFlags()
+        if SCNetworkReachabilityGetFlags(ref, &flags), flags.contains(.reachable) {
+            return nil
+        }
+
+        return try Helper(ref: ref).pending
     }
 }
 
@@ -40,6 +48,10 @@ private class Helper {
 
     init(ref: SCNetworkReachability) throws {
         self.ref = ref
+        
+        // Set 'reject' for cancellation so that the promise will be rejected if cancelled.  The 'ensure' block
+        // below will automatically clean up the callback and dispatch queue when the promise is rejected.
+        pending.promise.setCancellableTask(nil, reject: pending.resolver.reject)
 
         var context = SCNetworkReachabilityContext(version: 0, info: nil, retain: nil, release: nil, copyDescription: nil)
         context.info = UnsafeMutableRawPointer(Unmanaged<Helper>.passUnretained(self).toOpaque())
@@ -58,3 +70,12 @@ private class Helper {
         }
     }
 }
+
+//////////////////////////////////////////////////////////// Cancellable wrapper
+
+extension SCNetworkReachability {
+    static func cancellablePromise() -> CancellablePromise<Void> {
+        return cancellable(promise())
+    }
+}
+
