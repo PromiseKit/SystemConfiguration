@@ -7,6 +7,8 @@ public extension SCNetworkReachability {
         case couldNotInitializeReachability
     }
 
+    /// - Note: cancelling this promise will cancel the underlying task
+    /// - SeeAlso: [Cancellation](http://promisekit.org/docs/)
     static func promise() -> Promise<Void> {
         do {
             if let promise = try pending()?.promise {
@@ -70,12 +72,3 @@ private class Helper {
         }
     }
 }
-
-//////////////////////////////////////////////////////////// Cancellable wrapper
-
-extension SCNetworkReachability {
-    static func cancellablePromise() -> CancellablePromise<Void> {
-        return cancellable(promise())
-    }
-}
-
